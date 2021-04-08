@@ -198,7 +198,11 @@ export default function Ads() {
           ]}
           options={{
             actionsColumnIndex: -1,
-            exportButton: true
+            exportButton: true,
+            headerStyle: {
+              backgroundColor: '#01579b',
+              color: '#FFF'
+            }
           }}
         />
       </div>

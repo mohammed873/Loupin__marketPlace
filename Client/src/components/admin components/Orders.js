@@ -58,7 +58,11 @@ function Orders() {
         ]}
         data={orders}
         options={{
-          exportButton: true
+          exportButton: true,
+          headerStyle: {
+            backgroundColor: '#01579b',
+            color: '#FFF'
+          }
         }}
       />
     </div>

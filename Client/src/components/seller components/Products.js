@@ -126,12 +126,20 @@ export default function Products() {
       })
       .then(function (response) {
         getProducts()
+        toast.configure()
+        toast.success('Product deleted successfully !')
       })
       .catch(function (error) {
         console.log(error)
       })
   }
-
+  const TitleImg = (rowData) => {
+    return (
+      <div>
+        <input type='file' />
+      </div>
+    )
+  }
   return (
     <div className='ads-container'>
       <Button
@@ -229,24 +237,30 @@ export default function Products() {
             {
               title: 'Picture',
               field: 'picture',
+              editable: 'never',
               render: (rowData) => <img src={`/uploads/${rowData.picture}`} />
             },
             { title: 'Name', field: 'name' },
-            { title: 'Price', field: 'price' },
+            { title: 'Price', field: 'price', type: 'numeric' },
             { title: 'description', field: 'description' }
           ]}
           data={products}
-          actions={[
-            {
-              icon: 'delete',
-              tooltip: 'Delete Buyer',
-              onClick: (event, rowData) => {
-                deleteProduct(rowData._id)
-              }
-            }
-          ]}
+          editable={{
+            onRowDelete: (products) =>
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  deleteProduct(products._id)
+                  resolve()
+                }, 1000)
+              })
+          }}
           options={{
-            actionsColumnIndex: -1
+            actionsColumnIndex: -1,
+            exportButton: true,
+            headerStyle: {
+              backgroundColor: '#01579b',
+              color: '#FFF'
+            }
           }}
         />
       </div>

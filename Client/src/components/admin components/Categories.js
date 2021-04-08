@@ -21,9 +21,6 @@ export default function Categories() {
   const classes = useStyles()
   const { register, handleSubmit } = useForm('')
   const [categories, setCategories] = useState([])
-  const [name, setName] = useState({
-    name: ''
-  })
 
   useEffect(() => {
     fetchData()
@@ -51,7 +48,8 @@ export default function Categories() {
         })
         .then(function (response) {
           toast.configure()
-          toast.error('Category Added successfully')
+          toast.success('Category Added successfully')
+          fetchData()
         })
         .catch(function (error) {
           toast.configure()
@@ -64,12 +62,12 @@ export default function Categories() {
     }
   }
 
-  const updateCategory = async (id, Cname) => {
+  const updateCategory = async (newCat) => {
     await axios
       .put(
-        'http://localhost:5000/category/updateCategory/' + id,
+        'http://localhost:5000/category/updateCategory/' + newCat._id,
         {
-          name: Cname
+          name: newCat.name
         },
         {
           headers: {
@@ -80,7 +78,7 @@ export default function Categories() {
       .then(function (response) {
         fetchData()
         toast.configure()
-        toast.error('Category Updated successfully')
+        toast.success('Category Updated successfully')
       })
       .catch(function (error) {
         console.log(error)
@@ -93,14 +91,13 @@ export default function Categories() {
       .then(function (response) {
         fetchData()
         toast.configure()
-        toast.error('Category deleted successfully')
+        toast.success('Category deleted successfully')
       })
       .catch(function (error) {
         console.log(error)
       })
   }
 
-  console.log(name)
 
   return (
     <div style={{ width: '70%', margin: 'auto' }}>
@@ -119,9 +116,8 @@ export default function Categories() {
 
           onRowUpdate: (newCategories) =>
             new Promise((resolve, reject) => {
-              setName(newCategories.name)
               setTimeout(() => {
-                updateCategory(newCategories._id, newCategories.name)
+                updateCategory(newCategories)
                 resolve()
               }, 1000)
             }),
@@ -136,7 +132,11 @@ export default function Categories() {
         }}
         options={{
           actionsColumnIndex: -1,
-          exportButton: true
+          exportButton: true,
+          headerStyle: {
+            backgroundColor: '#01579b',
+            color: '#FFF'
+          }
         }}
       />
     </div>
