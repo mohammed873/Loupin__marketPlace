@@ -1,117 +1,123 @@
-require("dotenv").config();
-const Seller = require("../models/Seller");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const {sellerValidationSchema,loginValidationSchema} = require("./validations/validationSchema");
-const { generatePassword, sendMail } = require("./validations/methods");
+require('dotenv').config()
+const Seller = require('../models/Seller')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const {
+  sellerValidationSchema,
+  loginValidationSchema
+} = require('./validations/validationSchema')
+const { generatePassword, sendMail } = require('./validations/methods')
 
 exports.sellerRegister = async (req, res, next) => {
-
-  const tempPassword = generatePassword();
-  req.body.password = tempPassword;
+  const tempPassword = generatePassword()
+  req.body.password = tempPassword
 
   sellerEmail = req.body.email
 
   const { error } = sellerValidationSchema.validate(req.body)
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send(error.details[0].message)
 
-  const emailExist = await Seller.findOne({ email: req.body.email });
-  if (emailExist) return res.status(400).send("Email already exist");
+  const emailExist = await Seller.findOne({ email: req.body.email })
+  if (emailExist) return res.status(400).send('Email already exist')
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(req.body.password, salt);
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
   const seller = new Seller({
     full_name: req.body.full_name,
     email: sellerEmail,
-    type: "Starter",
+    type: 'Starter',
     phone: req.body.phone,
     password: hashedPassword,
     address: req.body.address,
     turnOver: 0,
     productsCount: 0,
-    identity: req.body.identity,
-  });
+    identity: req.body.identity
+  })
 
   try {
-    const savedSeller = await seller.save();
+    const savedSeller = await seller.save()
     const sellerInfo = {
       tempPassword,
       sellerEmail
-    };
-    sendMail(sellerInfo);
-    res.send(savedSeller);
+    }
+    sendMail(sellerInfo)
+    res.send(savedSeller)
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send(error)
   }
-};
+}
 
 exports.resetPassword = async (req, res, next) => {
-  const token = req.header("auth-token");
-  const sellerEmail = jwt.verify(token, process.env.SELLER_TOKEN).email;
+  const token = req.header('auth-token')
+  const sellerEmail = jwt.verify(token, process.env.SELLER_TOKEN).email
 
-  const { password, newPassword } = req.body;
+  const { password, newPassword } = req.body
   try {
-    const seller = await Seller.findOne({ email: sellerEmail });
+    const seller = await Seller.findOne({ email: sellerEmail })
     if (seller) {
       bcrypt.compare(password, seller.password, async (err, result) => {
         if (result) {
-          const hashedPassword = await bcrypt.hash(newPassword, 10);
-          seller.password = hashedPassword;
+          const hashedPassword = await bcrypt.hash(newPassword, 10)
+          seller.password = hashedPassword
           seller.isReseted = true
-          const newPass = await seller.save();
-          res.status(201).send(newPass);
+          const newPass = await seller.save()
+          res.status(201).send(newPass)
         } else {
-          res.status(401).send("password incorrect check your email");
+          res.status(401).send('password incorrect check your email')
         }
-      });
+      })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
-};
+}
 
 exports.sellerLogin = async (req, res, next) => {
   const { error } = loginValidationSchema.validate(req.body)
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send(error.details[0].message)
 
-  const seller = await Seller.findOne({ email: req.body.email });
-  if (!seller) return res.status(400).send("Email  not found");
+  const seller = await Seller.findOne({ email: req.body.email })
+  if (!seller) return res.status(400).send('Email  not found')
 
-  const validPass = await bcrypt.compare(req.body.password, seller.password);
-  if (!validPass) return res.status(400).send("Invalid password");
+  const validPass = await bcrypt.compare(req.body.password, seller.password)
+  if (!validPass) return res.status(400).send('Invalid password')
 
   const token = jwt.sign(
-    { _id: seller._id, email: seller.email ,role :'seller', isReseted : seller.isReseted , isValid : seller.isValid},
+    {
+      _id: seller._id,
+      email: seller.email,
+      role: 'seller',
+      isReseted: seller.isReseted,
+      isValid: seller.isValid
+    },
     process.env.SELLER_TOKEN
-  );
-  res.header("auth-token", token).send(token);
-};
+  )
+  res.header('auth-token', token).send(token)
+}
 
 exports.validSeller = async (req, res, next) => {
-
-
   const id_seller = req.body.id_seller
 
-  const seller = await Seller.findById({ _id: id_seller });
-  res.send(seller);
+  const seller = await Seller.findById({ _id: id_seller })
+  res.send(seller)
   if (!seller) {
-    res.status(404).send({ message: "Seller not found" });
+    res.status(404).send({ message: 'Seller not found' })
   } else {
-    seller.isValid = true;
-    const validSeller = await seller.save();
-    res.status(201).send(validSeller);
+    seller.isValid = true
+    const validSeller = await seller.save()
+    res.status(201).send(validSeller)
   }
-};
+}
 
 exports.getAllSellers = async (req, res, next) => {
   try {
-    const sellers = await Seller.find();
-    res.json(sellers);
+    const sellers = await Seller.find()
+    res.json(sellers)
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message })
   }
-};
+}
 
 // exports.sellerPack = async (req, res, next) => {
 //   const token = req.header("auth-token");
@@ -135,70 +141,69 @@ exports.getAllSellers = async (req, res, next) => {
 //   }
 // };
 
-
 exports.deleteSeller = async (req, res, next) => {
   try {
     const sellerDelete = await Seller.deleteOne({
-      _id: req.params.id,
-    });
-    res.status(201).send(sellerDelete);
+      _id: req.params.id
+    })
+    res.status(201).send(sellerDelete)
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send({ message: error.message })
   }
-};
+}
 
 exports.getSeller = async (req, res, next) => {
   try {
-    const seller = await Seller.findOne({ _id: req.params.id });
-    res.status(201).send(seller);
+    const seller = await Seller.findOne({ _id: req.params.id })
+    res.status(201).send(seller)
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send({ message: error.message })
   }
-};
+}
 
-exports.getSellersPagin =  async (req,res) => {
-  const {page,limit} =req.query;
-  try{
+exports.getSellersPagin = async (req, res) => {
+  const { page, limit } = req.query
+  try {
     const sellers = await Seller.find()
-    .limit(limit*1)
-    .skip((page -1)*limit).exec()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec()
     res.send(sellers)
-  }catch(error){
+  } catch (error) {
     res.send(error)
   }
- 
 }
 exports.sellerPack = async (req, res, next) => {
-  const seller = await Seller.findById({ _id: req.params.id });
+  const seller = await Seller.findById({ _id: req.params.id })
 
   if (!seller) {
-    res.status(404).send({ message: "Seller not found" });
+    res.status(404).send({ message: 'Seller not found' })
   }
 
-  seller.turnOver += req.body.turnOver;
-  seller.type = req.body.type;
+  seller.type = req.body.type
 
   try {
-    const sellerUpdated = await seller.save();
-    res.status(201).send(sellerUpdated);
+    const sellerUpdated = await seller.save()
+    res.status(201).send(sellerUpdated)
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send({ message: error.message })
   }
-};
+}
 
 exports.updateTurnOver = async (req, res, next) => {
-  const seller = await Seller.findById({ _id: req.params.id });
+  const seller = await Seller.findById({ _id: req.params.id })
 
   if (!seller) {
-    res.status(404).send({ message: "Seller not found" });
+    res.status(404).send({ message: 'Seller not found' })
   }
 
-  seller.turnOver += req.body.turnOver;
+  seller.turnOver += req.body.turnOver
 
   try {
-    const sellerUpdated = await seller.save();
-    res.status(201).send(sellerUpdated);
+    const sellerUpdated = await seller.save()
+    res.status(201).send(sellerUpdated)
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send({ message: error.message })
   }
-};
+}
+

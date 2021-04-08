@@ -29,6 +29,7 @@ app.use(function (req, res, next) {
   );
   next();
 });
+app.use(cors())
 app.use("/superAdmin", superAdminRouter);
 app.use("/seller", sellerRouter);
 app.use("/buyer", buyerRouter);

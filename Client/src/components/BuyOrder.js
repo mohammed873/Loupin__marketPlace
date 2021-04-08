@@ -1,7 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import scriptLoader from 'react-async-script-loader'
-import axios from 'axios'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { Redirect } from 'react-router-dom'
 
 const CLIENT = {
   sandbox:
@@ -30,11 +32,9 @@ class PaypalButton extends React.Component {
   componentDidMount() {
     const {
       isScriptLoaded,
-      isScriptLoadSucceed,
-      // eslint-disable-next-line
-      turnOver, // eslint-disable-next-line
-      type, // eslint-disable-next-line
-      id // eslint-disable-next-line
+      isScriptLoadSucceed, // eslint-disable-next-line
+      addOrder, // eslint-disable-next-line
+      totalPrice
     } = this.props
 
     if (isScriptLoaded && isScriptLoadSucceed) {
@@ -43,20 +43,7 @@ class PaypalButton extends React.Component {
     }
   }
 
-  updateTurnOver = async (id) => {
-    await axios
-      .patch('http://localhost:5000/seller/upgrade/' + id, {
-        type: this.props.type
-      })
-      .then((res) => {
-        console.log(res)
-      })
-      .catch((err) => {
-        console.log(err.response.data)
-      })
-  }
-
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { isScriptLoaded, isScriptLoadSucceed } = nextProps
 
     const scriptJustLoaded =
@@ -72,6 +59,7 @@ class PaypalButton extends React.Component {
       }
     }
   }
+
   createOrder = (data, actions) => {
     return actions.order.create({
       purchase_units: [
@@ -79,7 +67,7 @@ class PaypalButton extends React.Component {
           description: '',
           amount: {
             currency_code: 'USD',
-            value: this.props.turnOver
+            value: this.props.totalPrice
           }
         }
       ]
@@ -92,11 +80,18 @@ class PaypalButton extends React.Component {
         payerID: data.payerID,
         orderID: data.orderID
       }
-      this.updateTurnOver(this.props.id)
+      this.props.addOrder()
       console.log('Payment Approved: ', paymentData)
       this.setState({ showButtons: false, paid: true })
+      if (this.state.paid) {
+        toast.configure()
+        toast.success('your order is finished successfully')
+        this.setState({ redirect: '/' })
+      }
     })
   }
+
+  state = { redirect: null }
 
   render() {
     const {
@@ -104,6 +99,9 @@ class PaypalButton extends React.Component {
       loading,
       paid
     } = this.state
+    if (this.state.redirect) {
+      return <Redirect to={this.state.redirect} />
+    }
 
     return (
       <div className='main mt-5'>
@@ -115,12 +113,6 @@ class PaypalButton extends React.Component {
             />
             <div></div>
           </div>
-        )}
-
-        {paid && (
-          <h1 style={{ textAlign: 'center' }}>
-            Your Pack is Payed Successfully
-          </h1>
         )}
       </div>
     )
