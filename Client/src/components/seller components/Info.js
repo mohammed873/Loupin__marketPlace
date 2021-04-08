@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import userImg from "../../img/bussiness-man.png";
 import jwt from "jwt-decode";
 import axios from "axios";
-import "./profile.css";
+import "../../styles/profile.css";
 
 export default function Info() {
   const [seller, setSeller] = useState({});

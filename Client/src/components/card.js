@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import './prcard.css'
+import '../styles/prcard.css'
 import BuyProduct from './BuyOrder'
 import jwt from 'jwt-decode'
 
@@ -106,12 +106,14 @@ function Card({ match }) {
             {token ? (
               <BuyProduct totalPrice={product.price} addOrder={addOrder} />
             ) : (
-            
               <div
                 style={{
-                  width: '100%',
-                  backgroundColor: 'red',
-                  color: 'white'
+                  fontSize: '20px',
+                  width: '68%',
+                  padding: '11%',
+                  color: 'red',
+                  margin: 'auto',
+                  textAlign: 'center'
                 }}
               >
                 Sorry you cannot finsh the order, to procced Sign in

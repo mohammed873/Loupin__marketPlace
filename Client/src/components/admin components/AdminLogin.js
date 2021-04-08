@@ -10,7 +10,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 export default function Admin() {
-  let history = useHistory()
+  const history = useHistory()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [value, setValue] = useState('admin')
@@ -26,7 +26,7 @@ export default function Admin() {
       await axios
         .post('http://localhost:5000/superAdmin/login', {
           email: email,
-          password: password,
+          password: password
         })
         .then(function (response) {
           localStorage.setItem('token', response.data)
@@ -40,7 +40,7 @@ export default function Admin() {
       await axios
         .post('http://localhost:5000/admin/login', {
           email: email,
-          password: password,
+          password: password
         })
         .then(function (response) {
           localStorage.setItem('token', response.data)
