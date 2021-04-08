@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import MaterialTable from 'material-table'
 import { toast } from 'react-toastify'
+import { makeStyles } from '@material-ui/core/styles'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    '& > *': {
+      margin: theme.spacing(2),
+      width: '94%'
+    }
+  }
+}))
 
 function Orders() {
   const [orders, setOrders] = useState([])
@@ -27,7 +37,7 @@ function Orders() {
   console.log(orders)
 
   return (
-    <div style={{ width: '70%', margin: 'auto' }}>
+    <div className="orders-container" style={{ width: '70%', margin: 'auto' }}>
       <MaterialTable
         title='Orders Table'
         columns={[

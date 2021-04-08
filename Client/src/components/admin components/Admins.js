@@ -13,9 +13,6 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import jwt from 'jwt-decode'
 import access from '../../../src/img/access.jpg'
-import { store } from 'react-notifications-component'
-import Table from 'react-bootstrap/Table'
-import DeleteIcon from '@material-ui/icons/Delete'
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -198,6 +195,7 @@ export default function Admins() {
                 }
               ]}
               options={{
+                actionsColumnIndex: -1,
                 exportButton: true
               }}
             />

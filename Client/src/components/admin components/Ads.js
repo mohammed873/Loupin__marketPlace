@@ -196,6 +196,10 @@ export default function Ads() {
               }
             }
           ]}
+          options={{
+            actionsColumnIndex: -1,
+            exportButton: true
+          }}
         />
       </div>
     </div>

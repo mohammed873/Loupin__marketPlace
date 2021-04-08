@@ -67,6 +67,7 @@ function Buyers() {
           }
         ]}
         options={{
+          actionsColumnIndex: -1,
           exportButton: true
         }}
       />

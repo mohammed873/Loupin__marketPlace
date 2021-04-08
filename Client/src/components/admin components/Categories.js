@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Button from '@material-ui/core/Button'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
-import { store } from 'react-notifications-component'
-import Table from 'react-bootstrap/Table'
-import DeleteIcon from '@material-ui/icons/Delete'
-import UpdateIcon from '@material-ui/icons/Update'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
+import MaterialTable from 'material-table'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -17,12 +15,15 @@ const useStyles = makeStyles((theme) => ({
     }
   }
 }))
+
 export default function Categories() {
   const token = localStorage.getItem('token')
   const classes = useStyles()
   const { register, handleSubmit } = useForm('')
   const [categories, setCategories] = useState([])
-  const [name, setName] = useState('')
+  const [name, setName] = useState({
+    name: ''
+  })
 
   useEffect(() => {
     fetchData()
@@ -40,6 +41,8 @@ export default function Categories() {
       })
   }
 
+  const [columns, setColumns] = useState([{ title: 'Name', field: 'name' }])
+
   const onSubmit = (data) => {
     if (data.name) {
       axios
@@ -47,60 +50,26 @@ export default function Categories() {
           name: data.name
         })
         .then(function (response) {
-          fetchData()
-          store.addNotification({
-            title: 'Success !',
-            message: 'Category Added',
-            type: 'success',
-            insert: 'top',
-            container: 'bottom-right',
-            animationIn: ['animate__animated', 'animate__fadeIn'],
-            animationOut: ['animate__animated', 'animate__fadeOut'],
-            dismiss: {
-              duration: 5000,
-              onScreen: true
-            }
-          })
+          toast.configure()
+          toast.error('Category Added successfully')
         })
         .catch(function (error) {
-          store.addNotification({
-            title: 'Error !',
-            message: error.response.data,
-            type: 'danger',
-            insert: 'top',
-            container: 'bottom-right',
-            animationIn: ['animate__animated', 'animate__fadeIn'],
-            animationOut: ['animate__animated', 'animate__fadeOut'],
-            dismiss: {
-              duration: 5000,
-              onScreen: true
-            }
-          })
+          toast.configure()
+          toast.error(error.response.data)
           console.log(error.response.data)
         })
     } else {
-      store.addNotification({
-        title: 'Error !',
-        message: 'Name is empty',
-        type: 'danger',
-        insert: 'top',
-        container: 'bottom-right',
-        animationIn: ['animate__animated', 'animate__fadeIn'],
-        animationOut: ['animate__animated', 'animate__fadeOut'],
-        dismiss: {
-          duration: 5000,
-          onScreen: true
-        }
-      })
+      toast.configure()
+      toast.error('Name is empty !')
     }
   }
 
-  const updateCategory = async (id) => {
+  const updateCategory = async (id, Cname) => {
     await axios
       .put(
         'http://localhost:5000/category/updateCategory/' + id,
         {
-          name: name
+          name: Cname
         },
         {
           headers: {
@@ -110,19 +79,8 @@ export default function Categories() {
       )
       .then(function (response) {
         fetchData()
-        store.addNotification({
-          title: 'Success !',
-          message: 'Category updated',
-          type: 'success',
-          insert: 'top',
-          container: 'bottom-right',
-          animationIn: ['animate__animated', 'animate__fadeIn'],
-          animationOut: ['animate__animated', 'animate__fadeOut'],
-          dismiss: {
-            duration: 5000,
-            onScreen: true
-          }
-        })
+        toast.configure()
+        toast.error('Category Updated successfully')
       })
       .catch(function (error) {
         console.log(error)
@@ -134,77 +92,53 @@ export default function Categories() {
       .delete('http://localhost:5000/category/deleteCategory/' + id)
       .then(function (response) {
         fetchData()
-        store.addNotification({
-          title: 'Success !',
-          message: 'Category Deleted',
-          type: 'success',
-          insert: 'top',
-          container: 'bottom-right',
-          animationIn: ['animate__animated', 'animate__fadeIn'],
-          animationOut: ['animate__animated', 'animate__fadeOut'],
-          dismiss: {
-            duration: 5000,
-            onScreen: true
-          }
-        })
+        toast.configure()
+        toast.error('Category deleted successfully')
       })
       .catch(function (error) {
         console.log(error)
       })
   }
 
+  console.log(name)
+
   return (
-    <div className='category-container'>
-      <h1>Add or Update Category</h1>
-      <div className='add-category-form'>
-        <form
-          className={classes.root}
-          noValidate
-          autoComplete='on'
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <TextField
-            name='name'
-            variant='outlined'
-            label='Category Name'
-            inputRef={register}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Button variant='contained' color='primary' type='submit'>
-            Add
-          </Button>
-        </form>
-      </div>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Update</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((category) => {
-            return (
-              <tr key={category._id}>
-                <td>{category.name}</td>
-                <td>
-                  {' '}
-                  <button onClick={() => updateCategory(category._id)}>
-                    <UpdateIcon color='primary' />
-                  </button>{' '}
-                </td>
-                <td>
-                  {' '}
-                  <button onClick={() => deleteCategory(category._id)}>
-                    <DeleteIcon color='error' />
-                  </button>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </Table>
+    <div style={{ width: '70%', margin: 'auto' }}>
+      <MaterialTable
+        title='Category Table'
+        columns={columns}
+        data={categories}
+        editable={{
+          onRowAdd: (newCategories) =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                onSubmit(newCategories)
+                resolve()
+              }, 1000)
+            }),
+
+          onRowUpdate: (newCategories) =>
+            new Promise((resolve, reject) => {
+              setName(newCategories.name)
+              setTimeout(() => {
+                updateCategory(newCategories._id, newCategories.name)
+                resolve()
+              }, 1000)
+            }),
+
+          onRowDelete: (categories) =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                deleteCategory(categories._id)
+                resolve()
+              }, 1000)
+            })
+        }}
+        options={{
+          actionsColumnIndex: -1,
+          exportButton: true
+        }}
+      />
     </div>
   )
 }

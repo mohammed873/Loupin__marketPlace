@@ -3,10 +3,7 @@ import MaterialTable from 'material-table'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
-import { makeStyles } from '@material-ui/core/styles'
-import Modal from '@material-ui/core/Modal'
-import Backdrop from '@material-ui/core/Backdrop'
-import Fade from '@material-ui/core/Fade'
+
 
 function Sellers() {
   const [sellers, setSellers] = useState([])
@@ -101,6 +98,7 @@ function Sellers() {
           }
         ]}
         options={{
+          actionsColumnIndex: -1,
           exportButton: true
         }}
       />

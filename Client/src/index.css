@@ -74,6 +74,10 @@
   height: 50px;
   width: auto;
 }
+.orders-container img {
+  height: 50px;
+  width: auto;
+}
 
 .ads-container table td{
   vertical-align: middle;
